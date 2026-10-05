@@ -1,0 +1,12 @@
+Correcciones de las TSs:
+
+* TS3: Desparramo Espectral
+
+    * Los gráficos están bien, pero las etiquetas no son correctas. En el eje vertical donde dice Potencia [dB]
+      en realidad son valores de Densidad de Potencia. Potencia es la sumatoria en todo el dominio de 0 a N-1.
+      Y en el título que dice Potencia Espectral, debe decir Densidad Espectral del Potencia.
+    * En la conclusión ponés: "La escala logarítmica muestra de mejor manera como decae la señal con el tiempo, ...".
+      Eso no es correcto.
+    * Valoro mucho que quieras explicar los conceptos con tus palabras, pero hay que marcar ciertas imprecisiones.
+      El último párrafo tienen varias:  frecuencia de sampleado, convolución de la señal con qué? señal sinc, etc. 
+
