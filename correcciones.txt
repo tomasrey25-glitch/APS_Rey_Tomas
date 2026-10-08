@@ -10,3 +10,12 @@ Correcciones de las TSs:
     * Valoro mucho que quieras explicar los conceptos con tus palabras, pero hay que marcar ciertas imprecisiones.
       El último párrafo tienen varias:  frecuencia de sampleado, convolución de la señal con qué? señal sinc, etc. 
 
+* TS4: Estimadores
+
+    * Excelente trabajo en líneas generales
+    * Pasar por un corrector el texto que hay errores de edición, pequeños errores.
+    * En el gráfico del espectro de las señales ventaneadas, el eje vertical tiene una etiqueta que no es correcta,
+      dice Potencia cuando en realidad son valores de Densidad de Potencia.
+    * En la conclusión dice: "El estimador de amplitud no fue igual de consistente y varió mucho entre ventana y 
+      ventana" consistente no es la palabra que usaría. Revisar el significado de estimador consistente. 
+     
