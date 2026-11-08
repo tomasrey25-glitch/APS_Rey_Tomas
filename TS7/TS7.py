@@ -60,9 +60,7 @@ ws=[ws1, ws2]
 sos_butt = sig.iirdesign(wp, ws, gpass=ripple, gstop=atenuacion, ftype='butter', fs=fs, output = 'sos')
 sos_cheby2 = sig.iirdesign(wp, ws, gpass=ripple, gstop=atenuacion, ftype='cheby2', fs = fs, output = 'sos')
 sos_cauer = sig.iirdesign(wp, ws, gpass=ripple, gstop=atenuacion, ftype='cauer', fs = fs, output = 'sos')
-#%%
-#FUNCION PARA GRAFICAR 
-def calc_resp( sos, leg_str, fig_n_axes):
+def calc_resp(sos, leg_str, fig_n_axes):
 
     # Respuesta en frecuencia en Hz, de 0 a Nyquist
     f, h = sig.freqz_sos(sos, worN=8192, fs=fs)
@@ -71,31 +69,27 @@ def calc_resp( sos, leg_str, fig_n_axes):
     modulo_db = 20 * np.log10(np.maximum(np.abs(h), 1e-12))
     fase_rad = np.unwrap(np.angle(h))
 
-    # Retardo de grupo: -d(fase)/d(omega), expresado en segundos
-    omega = 2 * np.pi * f # rad/s
+    # Retardo de grupo: -d(fase)/d(omega), en segundos
+    omega = 2 * np.pi * f
     retardo_s = -np.gradient(fase_rad, omega)
 
-    # En frecuencias donde el filtro prácticamente rechaza la señal,
-    # la fase y el retardo pueden ser poco significativos.
+    # Donde el filtro rechaza la señal, el retardo no es significativo
     umbral_db = -80
     valido = modulo_db > umbral_db
     retardo_s_plot = np.where(valido, retardo_s, np.nan)
 
-
     (fig, (ax_mod, ax_fase)) = fig_n_axes
 
     # --- Módulo ---
-    ax_mod.plot(f, modulo_db, linewidth=1.5,
-    label= leg_str )
+    ax_mod.plot(f, modulo_db, linewidth=1.5, label=leg_str)
     ax_mod.set_ylim(y_min, y_max)
     ax_mod.set_ylabel("Módulo (dB)")
     ax_mod.set_title("Respuesta en frecuencia y plantilla")
     ax_mod.grid(True)
     ax_mod.legend()
 
-
     # --- Fase ---
-    ax_fase.plot(f, fase_rad, label= leg_str, linewidth=1.2)
+    ax_fase.plot(f, fase_rad, label=leg_str, linewidth=1.2)
     for w in wp:
         ax_fase.axvline(w, color="gray", linestyle=":")
     for w in ws:
@@ -103,14 +97,11 @@ def calc_resp( sos, leg_str, fig_n_axes):
     ax_fase.set_xlabel("Frecuencia (Hz)")
     ax_fase.set_ylabel("Fase (rad)")
     ax_fase.grid(True)
-    ax_mod.legend()
+    ax_fase.legend()
 
-    plt.show()
-
-    # Figura 2: retardo de grupo en segundos
-
-    plt.figure(2, figsize=(10, 4))
-    plt.plot(f, retardo_s_plot, label= leg_str)
+    # --- Retardo de grupo (figura 2) ---
+    plt.figure(2)
+    plt.plot(f, retardo_s_plot, label=leg_str)
     for w in wp:
         plt.axvline(w, color="orange", linestyle="--")
     for w in ws:
@@ -121,50 +112,44 @@ def calc_resp( sos, leg_str, fig_n_axes):
     plt.grid(True)
     plt.legend()
 
-    plt.show()
-    
-
 #%% Graficar la respuesta de los filtros IIR
-
 
 plt.close('all')
 
 fig_n_axes = plt.subplots(
-2, 1, sharex=True, num = 1, figsize=(10, 7), constrained_layout=True
+    2, 1, sharex=True, num=1, figsize=(10, 7), constrained_layout=True
 )
 
-calc_resp( sos_butt, 'butter', fig_n_axes )
+calc_resp(sos_butt,   'butter', fig_n_axes)
+calc_resp(sos_cheby2, 'cheby2', fig_n_axes)
+calc_resp(sos_cauer,  'cauer',  fig_n_axes)
 
-calc_resp( sos_cheby2, 'cheby2', fig_n_axes )
+# Plantilla sobre el gráfico de módulo
+ax_mod = fig_n_axes[1][0]
 
-calc_resp( sos_cauer, 'cauer', fig_n_axes )
-
-
-# Ploteo de la plantilla sobre el gráfico de módulo ya existente
-
-# Nos paramos sobre el eje del módulo (el de arriba)
-ax_mod = fig_n_axes[1][0] # o el ax_mod que tengas a mano
-
-# 1. Zona prohibida inferior (de 0 a ws1, por debajo de -atenuacion)
-ax_mod.add_patch(Rectangle((0, y_min), ws1, -atenuacion - y_min,
+# Zona prohibida en rechazo: de -atenuacion hacia arriba
+ax_mod.add_patch(Rectangle((0, -atenuacion), ws1, y_max + atenuacion,
+                           facecolor="red", alpha=0.15, edgecolor="none", hatch="xxx"))
+ax_mod.add_patch(Rectangle((ws2, -atenuacion), nyq_frec - ws2, y_max + atenuacion,
                            facecolor="red", alpha=0.15, edgecolor="none", hatch="xxx"))
 
-# 2. Zona prohibida superior (de ws2 hasta nyq_frec, por debajo de -atenuacion)
-ax_mod.add_patch(Rectangle((ws2, y_min), nyq_frec - ws2, -atenuacion - y_min,
-                           facecolor="red", alpha=0.15, edgecolor="none", hatch="xxx"))
-
-# 3. Franja central prohibida por debajo del ripple (en la banda de paso entre wp1 y wp2)
+# Franja prohibida bajo el ripple, en la banda de paso
 ax_mod.add_patch(Rectangle((wp1, y_min), wp2 - wp1, -ripple - y_min,
-                           facecolor="red", alpha=0.15, edgecolor="none", hatch="xxx", label='Zonas Plantilla'))
+                           facecolor="red", alpha=0.15, edgecolor="none", hatch="xxx",
+                           label='Zonas Plantilla'))
 
-# Límites de las bandas con líneas verticales
+# Límites de las bandas
 for w in wp:
     ax_mod.axvline(w, color="blue", linestyle=":", alpha=0.6)
 for w in ws:
     ax_mod.axvline(w, color="red", linestyle="--", alpha=0.6)
 
 ax_mod.legend(loc="lower left", fontsize=8)
-plt.draw()
+ax_mod.set_xlim(0, 100)          
+# Retardo de grupo (figura 2)
+plt.figure(2)
+plt.xlim(0, 100)                 
+plt.show()         
 #%% Paso la señal por los IIR
 ecg_one_1d=ecg_one.ravel()
 
